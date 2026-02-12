@@ -114,9 +114,19 @@ def test_llm_prompt_with_custom_kwargs(mocker):
         backend_id="default",
     )
     assert backend.config.prompt_kwargs == {"system": "This is a test system prompt."}
-    prompt_mock = mocker.patch(
-        "wagtail_vector_index.ai_utils.backends.llm.llm.models.Model.prompt"
+
+    # Create a mock model with a prompt method that returns a mock response
+    mock_model = mocker.Mock()
+    mock_response = mocker.Mock()
+    mock_response.text.return_value = "test response"
+    mock_model.prompt.return_value = mock_response
+
+    # Patch llm.get_model to return our mock model
+    mocker.patch(
+        "wagtail_vector_index.ai_utils.backends.llm.llm.get_model",
+        return_value=mock_model
     )
+
     input_text = [
         "Little trotty wagtail, he waddled in the mud,",
         "And left his little footmarks, trample where he would.",
@@ -127,7 +137,7 @@ def test_llm_prompt_with_custom_kwargs(mocker):
         {"content": message, "role": "user"} for message in input_text
     ]
     backend.chat(messages=messages)
-    prompt_mock.assert_called_once_with(
+    mock_model.prompt.assert_called_once_with(
         os.linesep.join(input_text),
         system="This is a test system prompt.",
     )
@@ -205,9 +215,17 @@ def test_llm_embed(mocker):
         },
         backend_id="default",
     )
-    embed_mock = mocker.patch(
-        "wagtail_vector_index.ai_utils.backends.llm.llm.models.EmbeddingModel.embed_multi"
+    # Create a mock model with embed_multi method that returns an iterable
+    mock_model = mocker.Mock()
+    mock_embeddings = [[0.1, 0.2, 0.3] for _ in range(4)]  # 4 embeddings for 4 input texts
+    mock_model.embed_multi.return_value = iter(mock_embeddings)
+
+    # Patch llm.get_embedding_model to return our mock model
+    mocker.patch(
+        "wagtail_vector_index.ai_utils.backends.llm.llm.get_embedding_model",
+        return_value=mock_model
     )
+
     input_text = [
         "Little trotty wagtail, he waddled in the mud,",
         "And left his little footmarks, trample where he would.",
@@ -217,4 +235,4 @@ def test_llm_embed(mocker):
     # embed_multi gets called only when iterating so we are converting it to a
     # list to force the iteration.
     list(backend.embed(input_text))
-    embed_mock.assert_called_once_with(input_text)
+    mock_model.embed_multi.assert_called_once_with(input_text)
