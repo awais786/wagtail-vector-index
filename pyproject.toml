@@ -17,53 +17,56 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Framework :: Django",
-    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
     "Framework :: Wagtail",
-    "Framework :: Wagtail :: 5",
+    "Framework :: Wagtail :: 6",
+    "Framework :: Wagtail :: 7",
 ]
 dynamic = ["version"]
 requires-python = ">=3.11"
 dependencies = [
-    "Django>=4.2",
-    "Wagtail>=5.2",
-    "litellm>=1.43.2",
-    "openai>=1.28.1",
-    "aiohttp>=3.9.0b0; python_version >= '3.12'",
+    "Django>=5.0,<5.3",
+    "Wagtail>=5.2,<7.0",
+    "litellm>=1.58.0",
+    "openai>=1.58.0",
+    "aiohttp>=3.10.0",
 ]
 [project.optional-dependencies]
 numpy = [
-    "numpy>=1.26.0",
+    "numpy>=1.26.0,<3.0",
 ]
 pgvector = [
-    "pgvector>=0.2.3",
+    "pgvector>=0.3.6",
 ]
 qdrant = [
-    "qdrant-client>=1.6.0",
+    "qdrant-client>=1.12.0",
 ]
 weaviate = [
-    "weaviate-client>=3.24.2",
+    "weaviate-client>=4.9.0",
 ]
 llm = [
-    "llm>=0.12",
+    "llm>=0.18",
 ]
 testing = [
-    "dj-database-url==2.1.0",
-    "pre-commit>=3.4.0",
-    "pytest>=7.4.2",
-    "pytest-asyncio>=0.23.6",
-    "pytest-mock>=3.12.0",
-    "pytest-django>=4.5.2",
-    "wagtail-factories>=4.1.0",
+    "dj-database-url>=2.3.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-mock>=3.14.0",
+    "pytest-django>=4.9.0",
+    "wagtail-factories>=4.2.0",
     "factory-boy>=3.3.0",
-    "coverage>=7.0,<8.0",
-    "pyright>=1.1.366",
+    "coverage>=7.6,<8.0",
+    "pyright>=1.1.400",
     "django-types>=0.19.1",
 ]
 docs = [
-    "mkdocs>=1.5.3",
-    "mkdocs-material>=9.4.5",
-    "mkdocs-awesome-pages-plugin>=2.9.2"
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocs-awesome-pages-plugin>=2.10.0"
 ]
 
 [project.urls]
