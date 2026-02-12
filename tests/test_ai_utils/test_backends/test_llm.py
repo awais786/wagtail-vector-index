@@ -40,6 +40,39 @@ def llm_embedding_backend_class():
     return LLMEmbeddingBackend
 
 
+@pytest.fixture
+def mock_llm_chat_model(mocker):
+    """Create a mock LLM chat model with prompt method."""
+    mock_model = mocker.Mock()
+    mock_response = mocker.Mock()
+    mock_response.text.return_value = "test response"
+    mock_model.prompt.return_value = mock_response
+
+    # Patch llm.get_model to return our mock
+    mocker.patch(
+        "wagtail_vector_index.ai_utils.backends.llm.llm.get_model",
+        return_value=mock_model
+    )
+
+    return mock_model
+
+
+@pytest.fixture
+def mock_llm_embedding_model(mocker):
+    """Create a mock LLM embedding model with embed_multi method."""
+    mock_model = mocker.Mock()
+    mock_embeddings = [[0.1, 0.2, 0.3] for _ in range(4)]
+    mock_model.embed_multi.return_value = iter(mock_embeddings)
+
+    # Patch llm.get_embedding_model to return our mock
+    mocker.patch(
+        "wagtail_vector_index.ai_utils.backends.llm.llm.get_embedding_model",
+        return_value=mock_model
+    )
+
+    return mock_model
+
+
 ###############################################################################
 # Chat
 ###############################################################################
@@ -100,7 +133,7 @@ def test_llm_custom_chat_init_kwargs():
 
 
 @skip_if_llm_not_installed
-def test_llm_prompt_with_custom_kwargs(mocker):
+def test_llm_prompt_with_custom_kwargs(mock_llm_chat_model):
     backend = get_chat_backend(
         backend_dict={
             "CLASS": "wagtail_vector_index.ai_utils.backends.llm.LLMChatBackend",
@@ -115,18 +148,6 @@ def test_llm_prompt_with_custom_kwargs(mocker):
     )
     assert backend.config.prompt_kwargs == {"system": "This is a test system prompt."}
 
-    # Create a mock model with a prompt method that returns a mock response
-    mock_model = mocker.Mock()
-    mock_response = mocker.Mock()
-    mock_response.text.return_value = "test response"
-    mock_model.prompt.return_value = mock_response
-
-    # Patch llm.get_model to return our mock model
-    mocker.patch(
-        "wagtail_vector_index.ai_utils.backends.llm.llm.get_model",
-        return_value=mock_model
-    )
-
     input_text = [
         "Little trotty wagtail, he waddled in the mud,",
         "And left his little footmarks, trample where he would.",
@@ -137,7 +158,7 @@ def test_llm_prompt_with_custom_kwargs(mocker):
         {"content": message, "role": "user"} for message in input_text
     ]
     backend.chat(messages=messages)
-    mock_model.prompt.assert_called_once_with(
+    mock_llm_chat_model.prompt.assert_called_once_with(
         os.linesep.join(input_text),
         system="This is a test system prompt.",
     )
@@ -205,7 +226,7 @@ def test_llm_custom_embedding_init_kwargs():
 
 
 @skip_if_llm_not_installed
-def test_llm_embed(mocker):
+def test_llm_embed(mock_llm_embedding_model):
     backend = get_embedding_backend(
         backend_dict={
             "CLASS": "wagtail_vector_index.ai_utils.backends.llm.LLMEmbeddingBackend",
@@ -214,16 +235,6 @@ def test_llm_embed(mocker):
             },
         },
         backend_id="default",
-    )
-    # Create a mock model with embed_multi method that returns an iterable
-    mock_model = mocker.Mock()
-    mock_embeddings = [[0.1, 0.2, 0.3] for _ in range(4)]  # 4 embeddings for 4 input texts
-    mock_model.embed_multi.return_value = iter(mock_embeddings)
-
-    # Patch llm.get_embedding_model to return our mock model
-    mocker.patch(
-        "wagtail_vector_index.ai_utils.backends.llm.llm.get_embedding_model",
-        return_value=mock_model
     )
 
     input_text = [
@@ -235,4 +246,4 @@ def test_llm_embed(mocker):
     # embed_multi gets called only when iterating so we are converting it to a
     # list to force the iteration.
     list(backend.embed(input_text))
-    mock_model.embed_multi.assert_called_once_with(input_text)
+    mock_llm_embedding_model.embed_multi.assert_called_once_with(input_text)
